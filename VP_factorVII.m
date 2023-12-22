@@ -421,7 +421,7 @@ histogram(diff_lev, ...
                 'BinWidth', w_bin2, 'FaceColor', cmap(2,:), ...
                 'Normalization', 'pdf')
 
-xlabel(strcat('Factor ', factor,' level difference after dsg'))
+xlabel(strcat('Factor ', factor,' level difference after lev'))
 ylabel('frequency')
 ylim(yrange)
 temp = sprintf('LEV \n MEAN DIFF: %0.3f \n STD DIFF: %0.3f',...
@@ -438,6 +438,22 @@ ylim(yrange)
 temp = sprintf('DSG \n MEAN DIFF: %0.3f \n STD DIFF: %0.3f',...
         mean(diff_dsg), std(diff_dsg));
 title(temp)
+
+figure(13)
+clf; 
+hold on
+histogram(diff_lev, ...
+                'BinWidth', w_bin2, 'FaceColor', cmap(2,:), ...
+                'Normalization', 'pdf')
+histogram(diff_dsg, ...
+                'BinWidth', w_bin2, 'FaceColor', cmap(4,:),...
+                'Normalization', 'pdf')
+
+xlabel(strcat('Factor ', factor,' level difference after OC'))
+ylabel('density')
+legend('Lev', 'Dsg')
+ylim(yrange)
+hold off
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot pairs

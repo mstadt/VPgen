@@ -2,7 +2,7 @@
 clear all
 %close all
 
-% Goal: Create a sample of virtual patients with Factor II levels
+% Goal: Create a sample of virtual patients with Factor V levels
 % that come from the observed data for individual factors as reported
 % in Middeldorp et al. 2000 (Fig 2) and the difference in mean + std
 % reported in Tab 1
@@ -15,8 +15,8 @@ clear all
 
 
 % set factor
-factor = 'II'
-note = 'factorII'
+factor = 'V'
+note = 'factorV'
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load Data and Set Ranges %
@@ -41,21 +41,25 @@ clearvars -except F_noOC F_lev F_dsg factor note;
 
 %Desired Mean Difference After Treatment (Lev - NoOC):
 % Factor II
-MEAN_lev = 12; %Table 1 taken from Middeldorp et al. 2000
-STD_lev  = 8;  %The Standard Deviation.
+MEAN_lev = -3; %Table 1 taken from Middeldorp et al. 2000
+STD_lev  = 12;  %The Standard Deviation.
 
-MEAN_dsg = 16;
-STD_dsg  = 6;
+MEAN_dsg = -11;
+STD_dsg  = 8;
 
 N_vp = 1e4; %100 %1e4 %1e4; % how many virtual patients
 
 % shuffle hyperparameters
-sigma1 = 0.05 * N_vp; %
-sigma2 = 0.01*sigma1; % variance for high and low values
-p = [25, 75]; % percentiles to change bias
+sigma1_lev = 0.1 * N_vp; %
+sigma2_lev = 0.01*sigma1_lev; % variance for high and low values
+p_lev = [25, 75]; % percentiles to change bias
 
 MEAN_err = 0.1; % percentage error from given mean
 STD_err  = 0.1; % percentage error from given STD
+
+sigma1_dsg = 0.05 * N_vp; 
+sigma2_dsg = 0.05*sigma1_dsg; %0.01*sigma1_dsg; % variance for high and low values
+p_dsg = [10,90]; %[25, 75]; % percentiles to change bias
 
 
 
@@ -63,7 +67,6 @@ STD_err  = 0.1; % percentage error from given STD
 MAX_TRIALS = 1e5;
 
 % set random seed
-%rng(1)
 rng(10)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -86,8 +89,8 @@ lw = 3;
 cmap = parula(5);
 c_h = 1; c_kdf = 3; c_samp = 5;
 w_bin = 5;
-xrange = [40, 190];
-yrange = [0,0.075];
+xrange = [40, 200];
+yrange = [0,0.05];
 subplot(1,3,1)
 histogram(F_noOC,'Normalization','pdf', ...
             'BinWidth', w_bin, 'FaceColor', cmap(c_h,:))
@@ -231,7 +234,7 @@ while and(OBJ ~= 1, NUM_TRIALS < MAX_TRIALS)
 
     
     % shuffle the Lev samples (biased)
-    samplesLev_new = biasedShuffle(samplesLev, sigma1, sigma2, p);
+    samplesLev_new = biasedShuffle(samplesLev, sigma1_lev, sigma2_lev, p_lev);
 
     % Compute differences
     diff_lev_new = samplesLev_new - samplesNoOC; %samplesLev - samplesNoOC;
@@ -272,7 +275,7 @@ while and(OBJ ~= 1, NUM_TRIALS < MAX_TRIALS)
     samplesLev = samplesLev_new; % set samplesLev to new samples
 end
 
-fprintf('lev samples complete.')
+fprintf('lev samples complete. \n')
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -327,7 +330,7 @@ while and(OBJ ~=1, NUM_TRIALS < MAX_TRIALS)
     NUM_TRIALS = NUM_TRIALS + 1;
     % prevent just shuffling if mean is good
     samp_check = NUM_TRIALS - last_samp;
-    if or(OBJ_MEAN == 0, samp_check > 100)
+    if or(OBJ_MEAN == 0, samp_check > 200)
         last_samp = NUM_TRIALS;
 
         % pick new dsg values (ordered)
@@ -342,7 +345,7 @@ while and(OBJ ~=1, NUM_TRIALS < MAX_TRIALS)
     end
 
     % shuffle the dsg samples (biased)
-    samplesDsg_new = biasedShuffle(samplesDsg, sigma1, sigma2, p);
+    samplesDsg_new = biasedShuffle(samplesDsg, sigma1_dsg, sigma2_dsg, p_dsg);
 
     % compute differences
     diff_dsg_new = samplesDsg_new - samplesNoOC;
@@ -411,14 +414,14 @@ figure(3);
 diff_lev = samplesLev - samplesNoOC;
 diff_dsg = samplesDsg - samplesNoOC;
 
-yrange = [0,0.15];
+yrange = [0,0.1];
 clf; 
 subplot(1,2,1)
 histogram(diff_lev, ...
                 'BinWidth', w_bin2, 'FaceColor', cmap(2,:), ...
                 'Normalization', 'pdf')
 
-xlabel(strcat('factor ', factor,' level difference after lev'))
+xlabel(strcat('Factor ', factor,' level difference after lev'))
 ylabel('frequency')
 ylim(yrange)
 temp = sprintf('LEV \n MEAN DIFF: %0.3f \n STD DIFF: %0.3f',...
@@ -429,8 +432,8 @@ subplot(1,2,2)
 histogram(diff_dsg, ...
                 'BinWidth', w_bin2, 'FaceColor', cmap(2,:),...
                 'Normalization', 'pdf')
-xlabel(strcat('Factor ', factor,' level difference after dsg'))
-ylabel('frequency')
+xlabel('factor level difference after dsg')
+ylabel('density')
 ylim(yrange)
 temp = sprintf('DSG \n MEAN DIFF: %0.3f \n STD DIFF: %0.3f',...
         mean(diff_dsg), std(diff_dsg));
@@ -459,22 +462,24 @@ hold off
 figure(5)
 clf;
 subplot(1,2,1)
+xrange = [40, 200];
+yrange = xrange;
 plot(samplesNoOC, samplesLev, 'linestyle', 'none', 'marker', '.', 'markersize', 15)
 xlabel(strcat('Factor ', factor,' before OC'))
 ylabel(strcat('Factor ',factor,' after Lev'))
 title('Lev VP pairs')
-ylim([50,180])
-xlim([50,180])
+ylim(yrange)
+xlim(xrange)
 
 subplot(1,2,2)
 plot(samplesNoOC, samplesDsg, 'linestyle', 'none', 'marker', '.', 'markersize', 15)
 xlabel(strcat('Factor ',factor,' before OC'))
 ylabel(strcat('Factor ',factor,' after Dsg'))
 title('Dsg VP pairs')
-ylim([50,180])
-xlim([50,180])
+ylim(yrange)
+xlim(xrange)
 
-%% 
+
 figure(6)
 clf;
 hold on
@@ -488,8 +493,8 @@ xlabel(strcat('Factor ', factor,' before OC'))
 ylabel(strcat('Factor ',factor,' after OC'))
 title({'VP pairs', ['Factor ', factor]})
 legend('Lev','Dsg') 
-ylim([50,180])
-xlim([50,180])
+ylim(yrange)
+xlim(xrange)
 hold off
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -515,8 +520,6 @@ if save_file
     
     fprintf('VP saved to: \n %s \n', fname)
 end
-
-
 
 
 
