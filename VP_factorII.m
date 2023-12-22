@@ -15,7 +15,8 @@ clear all
 
 
 % set factor
-factor = 'II';
+factor = 'II'
+note = 'factorII'
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load Data and Set Ranges %
@@ -36,16 +37,17 @@ F_dsg   = csvtable4.Var2;
 
 F_noOC = [F_noOC1; F_noOC2]; % merge noOC data together
 
-clearvars -except FactorII_noOC F_lev F_dsg;
+clearvars -except F_noOC F_lev F_dsg factor note;
 
 %Desired Mean Difference After Treatment (Lev - NoOC):
+% Factor II
 MEAN_lev = 12; %Table 1 taken from Middeldorp et al. 2000
 STD_lev  = 8;  %The Standard Deviation.
 
 MEAN_dsg = 16;
 STD_dsg  = 6;
 
-N_vp = 1e4 %1e4; % how many virtual patients
+N_vp = 1e4; %100 %1e4 %1e4; % how many virtual patients
 
 % shuffle hyperparameters
 sigma1 = 0.05 * N_vp; %
@@ -93,7 +95,7 @@ hold on
 plot(XF_noOC,PDFF_noOC,'color',cmap(c_kdf,:),'linewidth',lw)
 xlim(xrange)
 ylim(yrange)
-temp = strcat('Factor II (No OC)');
+temp = strcat('Factor ',factor, ' (No OC)');
 title({'Histogram and Kernel Density Function',temp})
 
 subplot(1,3,2)
@@ -103,7 +105,7 @@ hold on
 plot(XF_lev,PDFF_lev,'color',cmap(c_kdf,:),'linewidth',lw)
 xlim(xrange)
 ylim(yrange)
-temp = strcat('Factor II (Lev)');
+temp = strcat('Factor ', factor,' (Lev)');
 title({'Histogram and Kernel Density Function',temp})
 
 subplot(1,3,3)
@@ -113,7 +115,7 @@ hold on
 plot(XF_lev,PDFF_dsg,'color',cmap(c_kdf,:),'linewidth',lw)
 xlim(xrange)
 ylim(yrange)
-temp = strcat('Factor II (Dsg)');
+temp = strcat('Factor ',factor,' (Dsg)');
 title({'Histogram and Kernel Density Function',temp})
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -442,19 +444,38 @@ figure(5)
 clf;
 subplot(1,2,1)
 plot(samplesNoOC, samplesLev, 'linestyle', 'none', 'marker', '.', 'markersize', 15)
-xlabel('Factor II before OC')
-ylabel('Factor II after Lev')
+xlabel(strcat('Factor ', factor,' before OC'))
+ylabel(strcat('Factor ',factor,' after Lev'))
 title('Lev VP pairs')
 ylim([50,180])
 xlim([50,180])
 
 subplot(1,2,2)
 plot(samplesNoOC, samplesDsg, 'linestyle', 'none', 'marker', '.', 'markersize', 15)
-xlabel('Factor II before OC')
-ylabel('Factor II after Dsg')
+xlabel(strcat('Factor ',factor,' before OC'))
+ylabel(strcat('Factor ',factor,' after Dsg'))
 title('Dsg VP pairs')
 ylim([50,180])
 xlim([50,180])
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Save results
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
+                num2str(N_vp), '_note-', note, '.mat');
+if isfile(fname)
+    fprintf('file exists. change note.');
+    note = input('notes: ');
+    fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
+                num2str(N_vp), '_note-', note, '.mat');
+end
+save(fname, 'samplesNoOC', 'samplesDsg', 'samplesLev')
+fnameinf = strcat(date, '_Factor', factor, '_VP', ...
+    '_n-', num2str(N_vp), '_note-', note ,'_info.mat');
+save(fnameinf)
+
+fprintf('VP saved to: \n %s \n', fname)
+
 
 
 
