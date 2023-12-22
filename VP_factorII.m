@@ -112,7 +112,7 @@ subplot(1,3,3)
 histogram(F_dsg,'Normalization','pdf', ...
             'BinWidth', w_bin, 'FaceColor', cmap(c_h,:))
 hold on
-plot(XF_lev,PDFF_dsg,'color',cmap(c_kdf,:),'linewidth',lw)
+plot(XF_dsg,PDFF_dsg,'color',cmap(c_kdf,:),'linewidth',lw)
 xlim(xrange)
 ylim(yrange)
 temp = strcat('Factor ',factor,' (Dsg)');
@@ -418,7 +418,7 @@ histogram(diff_lev, ...
                 'BinWidth', w_bin2, 'FaceColor', cmap(2,:), ...
                 'Normalization', 'pdf')
 
-xlabel('factor level difference after lev')
+xlabel(strcat('factor ', factor,' level difference after lev'))
 ylabel('frequency')
 ylim(yrange)
 temp = sprintf('LEV \n MEAN DIFF: %0.3f \n STD DIFF: %0.3f',...
@@ -429,7 +429,7 @@ subplot(1,2,2)
 histogram(diff_dsg, ...
                 'BinWidth', w_bin2, 'FaceColor', cmap(2,:),...
                 'Normalization', 'pdf')
-xlabel('factor level difference after dsg')
+xlabel(strcat('Factor ', factor,' level difference after dsg'))
 ylabel('frequency')
 ylim(yrange)
 temp = sprintf('DSG \n MEAN DIFF: %0.3f \n STD DIFF: %0.3f',...
@@ -458,23 +458,48 @@ title('Dsg VP pairs')
 ylim([50,180])
 xlim([50,180])
 
+%% 
+figure(6)
+clf;
+hold on
+plot(samplesNoOC, samplesLev, 'linestyle', 'none', ...
+    'marker', '.', 'markersize', 15, ...
+    'color', cmap(2,:))
+plot(samplesNoOC, samplesDsg, 'linestyle', 'none', ...
+    'marker', '.', 'markersize', 15, ...
+    'color', cmap(4,:))
+xlabel(strcat('Factor ', factor,' before OC'))
+ylabel(strcat('Factor ',factor,' after OC'))
+title({'VP pairs', ['Factor ', factor]})
+legend('Lev','Dsg') 
+ylim([50,180])
+xlim([50,180])
+hold off
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Save results
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+save_file = 1;
 fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
                 num2str(N_vp), '_note-', note, '.mat');
 if isfile(fname)
-    fprintf('file exists. change note.');
-    note = input('notes: ');
-    fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
-                num2str(N_vp), '_note-', note, '.mat');
+    save_file = input('file exists. save file? (0/1)');
+    if save_file
+        note = input('change note. note: ');
+        fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
+                    num2str(N_vp), '_note-', note, '.mat');
+    end
 end
-save(fname, 'samplesNoOC', 'samplesDsg', 'samplesLev')
-fnameinf = strcat(date, '_Factor', factor, '_VP', ...
-    '_n-', num2str(N_vp), '_note-', note ,'_info.mat');
-save(fnameinf)
+if save_file
+    save(fname, 'samplesNoOC', 'samplesDsg', 'samplesLev')
+    fnameinf = strcat(date, '_Factor', factor, '_VP', ...
+        '_n-', num2str(N_vp), '_note-', note ,'_info.mat');
+    save(fnameinf)
+    
+    fprintf('VP saved to: \n %s \n', fname)
+end
 
-fprintf('VP saved to: \n %s \n', fname)
 
 
 
