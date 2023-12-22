@@ -1,6 +1,7 @@
 % Generate Factor VP samples
 clear all
 close all
+%test
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%  User Input %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 FactorName = input('what factor level? (II, V, VII, VIII, X):') %'VIII'; % II, V, VII, VIII, X
