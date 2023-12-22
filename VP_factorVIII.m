@@ -43,10 +43,10 @@ F_dsg   = csvtable4.Var2;
 
 F_noOC = [F_noOC1; F_noOC2]; % merge noOC data together
 
-% skew towards the mean
+% skew towards the mean (bias dataset)
 F_noOC = [F_noOC; mean(F_noOC); prctile(F_noOC, [60, 75, 80])'];
 F_lev = [F_lev; mean(F_lev); prctile(F_lev, [60, 75])'];
-F_dsg = [F_dsg; mean(F_dsg); prctile(F_dsg, [60, 75])'];
+F_dsg = [F_dsg; mean(F_dsg); prctile(F_dsg, [60, 75, 80])'];
 
 % Remove values less than 65
 % F_noOC(F_noOC < 65) = [];
