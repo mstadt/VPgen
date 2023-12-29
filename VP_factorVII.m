@@ -51,20 +51,20 @@ N_vp = 1e4; %100 %1e4 %1e4; % how many virtual patients
 
 % shuffle hyperparameters
 sigma1_lev = 0.05 * N_vp; %
-sigma2_lev = 0.01*sigma1_lev; % variance for high and low values
-p_lev = [25, 75]; % percentiles to change bias
+sigma2_lev = 0.1 * sigma1_lev; %0.01*sigma1_lev; % variance for high and low values
+p_lev = [10,90]; %[25, 75]; % percentiles to change bias
 
 MEAN_err = 0.1; % percentage error from given mean
 STD_err  = 0.1; % percentage error from given STD
 
 sigma1_dsg = 0.05 * N_vp; %
-sigma2_dsg = 0.01*sigma1_dsg; % variance for high and low values
-p_dsg = [25, 75]; % percentiles to change bias
+sigma2_dsg = 0.1*sigma1_dsg; %0.01*sigma1_dsg; % variance for high and low values
+p_dsg = [10,90]; %[25, 75]; % percentiles to change bias
 
 
 
 % How many trials do we want at max
-MAX_TRIALS = 1e5;
+MAX_TRIALS = 1e3;
 
 % set random seed
 rng(10)

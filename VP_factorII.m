@@ -12,6 +12,7 @@ clear all
 %    notes from Dec 19, 2023 meeting with Suzanne
 % - limit range on kernel density functions to be more realistic to what
 %    is found in the literature!
+% - limit range of differences to within 3 STD of the mean given in Table 1
 
 
 % set factor
@@ -293,7 +294,33 @@ end
 % compute differences
 diff_dsg = samplesDsg - samplesNoOC;
 
-mean_diff_dsg = mean(diff_dsg);
+mean_diff_dsg = mean(diff_dsg);%% plot pairs
+ms = 20;
+temp = gray(3);
+cgray = temp(2,:);
+figure(6)
+clf;
+hold on
+ax = gca;
+set(ax,'FontSize',18)
+ylim([50,180])
+xlim([50,180])
+% x = y line
+temp = xlim(gca);
+x = linspace(temp(1),temp(2));
+plot(x,x,'color',cgray,'linewidth',2)
+plot(samplesNoOC, samplesLev, 'linestyle', 'none', ...
+    'marker', '.', 'markersize', ms, ...
+    'color', cmap(2,:))
+plot(samplesNoOC, samplesDsg, 'linestyle', 'none', ...
+    'marker', '.', 'markersize', ms, ...
+    'color', cmap(4,:))
+xlabel(strcat('Factor ', factor,' before OC'))
+ylabel(strcat('Factor ',factor,' after OC'))
+title({'VP pairs', ['Factor ', factor]})
+legend('','Lev','Dsg','location','southeast') 
+hold off
+
 std_dif_dsg = std(diff_dsg);
 
 % Plot starting mean diff and std diff
@@ -474,22 +501,31 @@ title('Dsg VP pairs')
 ylim([50,180])
 xlim([50,180])
 
-%% 
+%% plot pairs
+ms = 20;
+temp = gray(3);
+cgray = temp(2,:);
 figure(6)
 clf;
 hold on
+ax = gca;
+set(ax,'FontSize',18)
+ylim([50,180])
+xlim([50,180])
+% x = y line
+temp = xlim(gca);
+x = linspace(temp(1),temp(2));
+plot(x,x,'color',cgray,'linewidth',2)
 plot(samplesNoOC, samplesLev, 'linestyle', 'none', ...
-    'marker', '.', 'markersize', 15, ...
+    'marker', '.', 'markersize', ms, ...
     'color', cmap(2,:))
 plot(samplesNoOC, samplesDsg, 'linestyle', 'none', ...
-    'marker', '.', 'markersize', 15, ...
+    'marker', '.', 'markersize', ms, ...
     'color', cmap(4,:))
 xlabel(strcat('Factor ', factor,' before OC'))
 ylabel(strcat('Factor ',factor,' after OC'))
 title({'VP pairs', ['Factor ', factor]})
-legend('Lev','Dsg') 
-ylim([50,180])
-xlim([50,180])
+legend('','Lev','Dsg','location','southeast') 
 hold off
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
