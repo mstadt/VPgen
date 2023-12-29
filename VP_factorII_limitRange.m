@@ -47,8 +47,8 @@ N_vp = 1e4; %100 %1e4 %1e4; % how many virtual patients
 
 % shuffle hyperparameters
 sigma1 = 0.05 * N_vp; %
-sigma2 = 0.01*sigma1; % variance for high and low values
-p = [25, 75]; % percentiles to change bias
+sigma2 = 0.5*sigma1; % variance for high and low values
+p = [10, 90]; % percentiles to change bias
 
 MEAN_err = 0.1; % percentage error from given mean
 STD_err  = 0.1; % percentage error from given STD
@@ -56,7 +56,7 @@ STD_err  = 0.1; % percentage error from given STD
 
 
 % How many trials do we want at max
-MAX_TRIALS = 1e5;
+MAX_TRIALS = 2.5e3;
 
 % set random seed
 %rng(1)
@@ -411,7 +411,7 @@ figure(3);
 diff_lev = samplesLev - samplesNoOC;
 diff_dsg = samplesDsg - samplesNoOC;
 
-yrange = [0,0.15];
+yrange = [0,0.1];
 clf; 
 subplot(1,2,1)
 histogram(diff_lev, ...
@@ -439,6 +439,8 @@ title(temp)
 figure(13)
 clf; 
 hold on
+ax = gca;
+set(ax,'fontsize',18)
 histogram(diff_lev, ...
                 'BinWidth', w_bin2, 'FaceColor', cmap(2,:), ...
                 'Normalization', 'pdf')

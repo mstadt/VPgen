@@ -41,15 +41,15 @@ N_vp = 1e4; %100 %1e4 %1e4; % how many virtual patients
 
 % shuffle hyperparameters
 sigma1_lev = 0.05 * N_vp; %
-sigma2_lev = 0.01*sigma1_lev; % variance for high and low values
+sigma2_lev = 0.1*sigma1_lev; % variance for high and low values
 p_lev = [25, 75]; % percentiles to change bias
 
 MEAN_err = 0.1; % percentage error from given mean
 STD_err  = 0.1; % percentage error from given STD
 
 sigma1_dsg = 0.05 * N_vp; %
-sigma2_dsg = sigma1_dsg; %0.01*sigma1_dsg; % variance for high and low values
-p_dsg = [10,90]; %[25, 75]; % percentiles to change bias
+sigma2_dsg = 0.25*sigma1_dsg; %0.01*sigma1_dsg; % variance for high and low values
+p_dsg = [15,85]; %[10,90]; %[25, 75]; % percentiles to change bias
 
 
 
@@ -406,10 +406,11 @@ legend({'Data', 'Kernel Density function', 'VP'})
 %%
 figure(3);
 
+
 diff_lev = samplesLev - samplesNoOC;
 diff_dsg = samplesDsg - samplesNoOC;
 
-yrange = [0,0.075];
+yrange = [0,0.05];
 clf; 
 subplot(1,2,1)
 histogram(diff_lev, ...
@@ -437,6 +438,7 @@ title(temp)
 figure(13)
 clf; 
 hold on
+ax = gca;set(ax, 'FontSize',18)
 histogram(diff_lev, ...
                 'BinWidth', w_bin2, 'FaceColor', cmap(2,:), ...
                 'Normalization', 'pdf')
@@ -505,20 +507,26 @@ hold off
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 save_file = 1;
-fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
-                num2str(N_vp), '_note-', note, '.mat');
+fname = strcat(date, '_Factor', factor, '_VP', ...
+                '_n-', num2str(N_vp), ...
+                '_limitRange',...
+                '_note-', note, '.mat');
 if isfile(fname)
     save_file = input('file exists. save file? (0/1)');
     if save_file
         note = input('change note. note: ');
-        fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
-                    num2str(N_vp), '_note-', note, '.mat');
+        fname = strcat(date, '_Factor', factor, '_VP',...
+                    '_n-', num2str(N_vp), ...
+                    '_limitRange',...
+                    '_note-', note, '.mat');
     end
 end
 if save_file
     save(fname, 'samplesNoOC', 'samplesDsg', 'samplesLev')
     fnameinf = strcat(date, '_Factor', factor, '_VP', ...
-        '_n-', num2str(N_vp), '_note-', note ,'_info.mat');
+        '_n-', num2str(N_vp), ...
+        '_limitRange',...
+        '_note-', note ,'_info.mat');
     save(fnameinf)
     
     fprintf('VP saved to: \n %s \n', fname)

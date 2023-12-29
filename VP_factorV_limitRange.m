@@ -2,16 +2,7 @@
 clear all
 %close all
 
-% Goal: Create a sample of virtual patients with Factor V levels
-% that come from the observed data for individual factors as reported
-% in Middeldorp et al. 2000 (Fig 2) and the difference in mean + std
-% reported in Tab 1
 
-% Ideas:
-% - Look at "pairedKernelDensitySamplesKeepSameSide.m" for
-%    notes from Dec 19, 2023 meeting with Suzanne
-% - limit range on kernel density functions to be more realistic to what
-%    is found in the literature!
 
 
 % set factor
@@ -53,8 +44,8 @@ diff_lims_dsg = [MEAN_dsg - 3*STD_dsg, MEAN_dsg + 3*STD_dsg];
 N_vp = 1e4; %100 %1e4 %1e4; % how many virtual patients
 
 % shuffle hyperparameters
-sigma1_lev = 0.1 * N_vp; %
-sigma2_lev = 0.01*sigma1_lev; % variance for high and low values
+sigma1_lev = 0.05 * N_vp; %0.1 * N_vp; %
+sigma2_lev = sigma1_lev; %0.01*sigma1_lev; % variance for high and low values
 p_lev = [25, 75]; % percentiles to change bias
 
 MEAN_err = 0.1; % percentage error from given mean
@@ -421,7 +412,7 @@ figure(3);
 diff_lev = samplesLev - samplesNoOC;
 diff_dsg = samplesDsg - samplesNoOC;
 
-yrange = [0,0.1];
+yrange = [0,0.08];
 clf; 
 subplot(1,2,1)
 histogram(diff_lev, ...
@@ -449,6 +440,8 @@ title(temp)
 figure(13)
 clf; 
 hold on
+ax = gca;
+set(ax, 'FontSize', 18)
 histogram(diff_lev, ...
                 'BinWidth', w_bin2, 'FaceColor', cmap(2,:), ...
                 'Normalization', 'pdf')
@@ -516,20 +509,26 @@ hold off
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 save_file = 1;
-fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
-                num2str(N_vp), '_note-', note, '.mat');
+fname = strcat(date, '_Factor', factor, '_VP', ...
+                '_n-', num2str(N_vp), ...
+                '_limitRange',...
+                '_note-', note, '.mat');
 if isfile(fname)
     save_file = input('file exists. save file? (0/1)');
     if save_file
         note = input('change note. note: ');
-        fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
-                    num2str(N_vp), '_note-', note, '.mat');
+        fname = strcat(date, '_Factor', factor, '_VP',...
+                    '_n-', num2str(N_vp), ...
+                    '_limitRange',...
+                    '_note-', note, '.mat');
     end
 end
 if save_file
     save(fname, 'samplesNoOC', 'samplesDsg', 'samplesLev')
     fnameinf = strcat(date, '_Factor', factor, '_VP', ...
-        '_n-', num2str(N_vp), '_note-', note ,'_info.mat');
+        '_n-', num2str(N_vp), ...
+        '_limitRange',...
+        '_note-', note ,'_info.mat');
     save(fnameinf)
     
     fprintf('VP saved to: \n %s \n', fname)

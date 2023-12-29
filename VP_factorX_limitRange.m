@@ -413,7 +413,7 @@ figure(3);
 diff_lev = samplesLev - samplesNoOC;
 diff_dsg = samplesDsg - samplesNoOC;
 
-yrange = [0,0.075];
+yrange = [0,0.04];
 clf; 
 subplot(1,2,1)
 histogram(diff_lev, ...
@@ -441,6 +441,8 @@ title(temp)
 figure(13)
 clf; 
 hold on
+ax = gca;
+set(ax,'fontsize',18)
 histogram(diff_lev, ...
                 'BinWidth', w_bin2, 'FaceColor', cmap(2,:), ...
                 'Normalization', 'pdf')
