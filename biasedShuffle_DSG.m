@@ -40,6 +40,8 @@ function shuffledArray = biasedShuffle_DSG(originalArray, sigma1, sigma2, p, dif
         diff_i_lev = sign(diff_lev(i));
         if diff_i ~= diff_i_lev
             flag = 1;
+        else 
+            flag = 0;
         end
         
         % difference at current index with new value
@@ -51,6 +53,11 @@ function shuffledArray = biasedShuffle_DSG(originalArray, sigma1, sigma2, p, dif
         if and(new_diff_i == sign(diff_lev(i)), new_diff_j == sign(diff_lev(j)))
             % swap value in index i and j if the new directions
             %  match the lev directions
+            temp = shuffledArray(i);
+            shuffledArray(i) = shuffledArray(j);
+            shuffledArray(j) = temp;
+        elseif flag
+            % swap value in index i and j if current value does not match
             temp = shuffledArray(i);
             shuffledArray(i) = shuffledArray(j);
             shuffledArray(j) = temp;
