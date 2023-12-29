@@ -3,65 +3,102 @@ clear all
 %close all
 
 
-
 % set factor
-factor = 'X'
-note = 'factorX'
+factor = 'VIII'
+note = 'factorVIII'
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load Data and Set Ranges %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Load Data
-temp = strcat('data/Factor', factor, '_noOC1.csv');
-csvtable1 =  readtable(temp);
+% temp = strcat('data/Factor', factor, '_noOC1.csv');
+% csvtable1 =  readtable(temp);
 temp = strcat('data/Factor', factor, '_lev.csv');
 csvtable2 =  readtable(temp);
-temp = strcat('data/Factor', factor, '_noOC2.csv');
-csvtable3 =  readtable(temp);
+% temp = strcat('data/Factor', factor, '_noOC2.csv');
+% csvtable3 =  readtable(temp);
 temp = strcat('data/Factor', factor, '_dsg.csv');
 csvtable4 =  readtable(temp);
-F_noOC1 = csvtable1.Var2; 
+
+temp = 'data/28-Dec-2023_FactorVIII_newNoOC_lev_dsg.mat'; % No OC sorted properly
+noOCdat = load(temp);
+%F_noOC1 = csvtable1.Var2; 
+F_noOC1 = noOCdat.F_noOC_lev;
+F_noOC2 = noOCdat.F_noOC_dsg;
+
 F_lev   = csvtable2.Var2;
-F_noOC2 = csvtable3.Var2;
+%F_noOC2 = csvtable3.Var2;
 F_dsg   = csvtable4.Var2;
 
 F_noOC = [F_noOC1; F_noOC2]; % merge noOC data together
 
-clearvars -except F_noOC F_lev F_dsg factor note;
+% skew towards the mean (bias dataset)
+F_noOC = [F_noOC; mean(F_noOC); prctile(F_noOC, [60, 75, 80])'];
+F_lev = [F_lev; mean(F_lev); prctile(F_lev, [60, 75])'];
+F_dsg = [F_dsg; mean(F_dsg); prctile(F_dsg, [60, 75, 80])'];
+
+% Remove values less than 65
+% F_noOC(F_noOC < 65) = [];
+% F_lev(F_lev < 65) = [];
+% F_dsg(F_dsg < 65) = [];
+
+
+%%
+%clearvars -except F_noOC F_lev F_dsg factor note;
 
 %Desired Mean Difference After Treatment (Lev - NoOC):
 % Factor II
-MEAN_lev = 22; %Table 1 taken from Middeldorp et al. 2000
-STD_lev  = 14;  %The Standard Deviation.
+MEAN_lev = 6; %Table 1 taken from Middeldorp et al. 2000
+STD_lev  = 25;  %The Standard Deviation.
+diff_lims_lev = [MEAN_lev - 3*STD_lev, MEAN_lev + 3*STD_lev];
 
-MEAN_dsg = 25;
-STD_dsg  = 12;
+MEAN_dsg = 10;
+STD_dsg  = 23;
+diff_lims_dsg = [MEAN_dsg - 3*STD_dsg, MEAN_dsg + 3*STD_dsg];
 
-N_vp = 1e4; %100 %1e4 %1e4; % how many virtual patients
+N_vp = 1e3; %1e4; %100 %1e4; %100 % how many virtual patients
 
 % shuffle hyperparameters
-sigma1_lev = 0.1 * N_vp; %
-sigma2_lev = 0.01*sigma1_lev; % variance for high and low values
+sigma1_lev = 0.1 * N_vp; %0.25 * N_vp; %
+sigma2_lev = 0.05*sigma1_lev; % variance for high and low values
 p_lev = [25, 75]; % percentiles to change bias
 
 MEAN_err = 0.1; % percentage error from given mean
 STD_err  = 0.1; % percentage error from given STD
 
-sigma1_dsg = 0.1 * N_vp; 
-sigma2_dsg = 0.01*sigma1_dsg; %0.01*sigma1_dsg; % variance for high and low values
-p_dsg = [25,75]; %[25, 75]; % percentiles to change bias
+sigma1_dsg = 0.1 * N_vp; %0.15 * N_vp; 
+sigma2_dsg = 0.05*sigma1_dsg; 
+p_dsg = [25, 75]; % percentiles to change bias
 
 
 
 % How many trials do we want at max
-MAX_TRIALS = 1e3;
+MAX_TRIALS = 1e3 %1e5;
 
 % set random seed
-rng(25)
+rng(10)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % create plots of original distributions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Kernel density function for lev and dsg No OC
+% No OC Factors 
+[PDFF_noOC1,XF_noOC1] = ksdensity(F_noOC1);
+[PDFF_noOC2,XF_noOC2] = ksdensity(F_noOC2);
+[PDFF_noOC,XF_noOC] = ksdensity(F_noOC);
+
+cmap = parula(6); lw = 4;
+figure(50);
+clf;
+hold on
+plot(XF_noOC1,PDFF_noOC1,'color',cmap(2,:),'linewidth',lw)
+plot(XF_noOC2,PDFF_noOC2,'color',cmap(4,:),'linewidth',lw)
+plot(XF_noOC, PDFF_noOC,'color',cmap(6,:),'linewidth',lw)
+
+legend('no oc 1', 'no oc 2', 'no oc combined')
+
+
+%%
 % Kernel density functions
 % No OC Factors 
 [PDFF_noOC,XF_noOC] = ksdensity(F_noOC);
@@ -79,8 +116,8 @@ lw = 3;
 cmap = parula(5);
 c_h = 1; c_kdf = 3; c_samp = 5;
 w_bin = 5;
-xrange = [40, 200];
-yrange = [0,0.075];
+xrange = [10, 250];
+yrange = [0,0.05];
 subplot(1,3,1)
 histogram(F_noOC,'Normalization','pdf', ...
             'BinWidth', w_bin, 'FaceColor', cmap(c_h,:))
@@ -111,6 +148,7 @@ ylim(yrange)
 temp = strcat('Factor ',factor,' (Dsg)');
 title({'Histogram and Kernel Density Function',temp})
 
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Create Inverse Kernel Density Functions %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -225,6 +263,8 @@ while and(OBJ ~= 1, NUM_TRIALS < MAX_TRIALS)
     
     % shuffle the Lev samples (biased)
     samplesLev_new = biasedShuffle(samplesLev, sigma1_lev, sigma2_lev, p_lev);
+    samplesLev_new = check_diffs(samplesLev_new, samplesNoOC,...
+                            diff_lims_lev);
 
     % Compute differences
     diff_lev_new = samplesLev_new - samplesNoOC; %samplesLev - samplesNoOC;
@@ -336,6 +376,8 @@ while and(OBJ ~=1, NUM_TRIALS < MAX_TRIALS)
 
     % shuffle the dsg samples (biased)
     samplesDsg_new = biasedShuffle(samplesDsg, sigma1_dsg, sigma2_dsg, p_dsg);
+    samplesDsg_new = check_diffs(samplesDsg_new, samplesNoOC,...
+                        diff_lims_dsg);
 
     % compute differences
     diff_dsg_new = samplesDsg_new - samplesNoOC;
@@ -404,7 +446,7 @@ figure(3);
 diff_lev = samplesLev - samplesNoOC;
 diff_dsg = samplesDsg - samplesNoOC;
 
-yrange = [0,0.075];
+yrange = [0,0.1];
 clf; 
 subplot(1,2,1)
 histogram(diff_lev, ...
@@ -452,7 +494,7 @@ hold off
 figure(5)
 clf;
 subplot(1,2,1)
-xrange = [40, 180];
+xrange = [20, 250];
 yrange = xrange;
 plot(samplesNoOC, samplesLev, 'linestyle', 'none', 'marker', '.', 'markersize', 15)
 xlabel(strcat('Factor ', factor,' before OC'))
@@ -470,9 +512,19 @@ ylim(yrange)
 xlim(xrange)
 
 
+ms = 20;
+temp = gray(3);
+cgray = temp(2,:);
 figure(6)
 clf;
 hold on
+ax = gca;
+set(ax,'FontSize',18)
+ylim(yrange)
+xlim(xrange)
+temp = xlim(gca);
+x = linspace(temp(1),temp(2));
+plot(x,x,'color',cgray,'linewidth',2)
 plot(samplesNoOC, samplesLev, 'linestyle', 'none', ...
     'marker', '.', 'markersize', 15, ...
     'color', cmap(2,:))
@@ -483,8 +535,7 @@ xlabel(strcat('Factor ', factor,' before OC'))
 ylabel(strcat('Factor ',factor,' after OC'))
 title({'VP pairs', ['Factor ', factor]})
 legend('Lev','Dsg') 
-ylim(yrange)
-xlim(xrange)
+
 hold off
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -493,19 +544,25 @@ hold off
 %%
 save_file = 1;
 fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
-                num2str(N_vp), '_note-', note, '.mat');
+                num2str(N_vp),...
+                '_limitrange', ...
+                '_note-', note, '.mat');
 if isfile(fname)
     save_file = input('file exists. save file? (0/1)');
     if save_file
         note = input('change note. note: ');
         fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
-                    num2str(N_vp), '_note-', note, '.mat');
+                    num2str(N_vp), ...
+                    '_limitrange', ...
+                    '_note-', note, '.mat');
     end
 end
 if save_file
     save(fname, 'samplesNoOC', 'samplesDsg', 'samplesLev')
     fnameinf = strcat(date, '_Factor', factor, '_VP', ...
-        '_n-', num2str(N_vp), '_note-', note ,'_info.mat');
+        '_n-', num2str(N_vp), ...
+        '_limitrange', ...
+        '_note-', note ,'_info.mat');
     save(fnameinf)
     
     fprintf('VP saved to: \n %s \n', fname)

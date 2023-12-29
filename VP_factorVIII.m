@@ -31,7 +31,7 @@ csvtable2 =  readtable(temp);
 temp = strcat('data/Factor', factor, '_dsg.csv');
 csvtable4 =  readtable(temp);
 
-temp = '22-Dec-2023_FactorVIII_newNoOC_lev_dsg.mat'; % No OC sorted properly
+temp = 'data/28-Dec-2023_FactorVIII_newNoOC_lev_dsg.mat'; % No OC sorted properly
 noOCdat = load(temp);
 %F_noOC1 = csvtable1.Var2; 
 F_noOC1 = noOCdat.F_noOC_lev;

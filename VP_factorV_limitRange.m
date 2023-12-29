@@ -2,11 +2,21 @@
 clear all
 %close all
 
+% Goal: Create a sample of virtual patients with Factor V levels
+% that come from the observed data for individual factors as reported
+% in Middeldorp et al. 2000 (Fig 2) and the difference in mean + std
+% reported in Tab 1
+
+% Ideas:
+% - Look at "pairedKernelDensitySamplesKeepSameSide.m" for
+%    notes from Dec 19, 2023 meeting with Suzanne
+% - limit range on kernel density functions to be more realistic to what
+%    is found in the literature!
 
 
 % set factor
-factor = 'X'
-note = 'factorX'
+factor = 'V'
+note = 'factorV'
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Load Data and Set Ranges %
@@ -31,11 +41,14 @@ clearvars -except F_noOC F_lev F_dsg factor note;
 
 %Desired Mean Difference After Treatment (Lev - NoOC):
 % Factor II
-MEAN_lev = 22; %Table 1 taken from Middeldorp et al. 2000
-STD_lev  = 14;  %The Standard Deviation.
+MEAN_lev = -3; %Table 1 taken from Middeldorp et al. 2000
+STD_lev  = 12;  %The Standard Deviation.
+diff_lims_lev = [MEAN_lev - 3*STD_lev, MEAN_lev + 3*STD_lev];
 
-MEAN_dsg = 25;
-STD_dsg  = 12;
+MEAN_dsg = -11;
+STD_dsg  = 8;
+
+diff_lims_dsg = [MEAN_dsg - 3*STD_dsg, MEAN_dsg + 3*STD_dsg];
 
 N_vp = 1e4; %100 %1e4 %1e4; % how many virtual patients
 
@@ -47,17 +60,17 @@ p_lev = [25, 75]; % percentiles to change bias
 MEAN_err = 0.1; % percentage error from given mean
 STD_err  = 0.1; % percentage error from given STD
 
-sigma1_dsg = 0.1 * N_vp; 
-sigma2_dsg = 0.01*sigma1_dsg; %0.01*sigma1_dsg; % variance for high and low values
-p_dsg = [25,75]; %[25, 75]; % percentiles to change bias
+sigma1_dsg = 0.05 * N_vp; 
+sigma2_dsg = 0.05*sigma1_dsg; %0.01*sigma1_dsg; % variance for high and low values
+p_dsg = [10,90]; %[25, 75]; % percentiles to change bias
 
 
 
 % How many trials do we want at max
-MAX_TRIALS = 1e3;
+MAX_TRIALS = 1e5;
 
 % set random seed
-rng(25)
+rng(10)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % create plots of original distributions
@@ -80,7 +93,7 @@ cmap = parula(5);
 c_h = 1; c_kdf = 3; c_samp = 5;
 w_bin = 5;
 xrange = [40, 200];
-yrange = [0,0.075];
+yrange = [0,0.05];
 subplot(1,3,1)
 histogram(F_noOC,'Normalization','pdf', ...
             'BinWidth', w_bin, 'FaceColor', cmap(c_h,:))
@@ -225,6 +238,8 @@ while and(OBJ ~= 1, NUM_TRIALS < MAX_TRIALS)
     
     % shuffle the Lev samples (biased)
     samplesLev_new = biasedShuffle(samplesLev, sigma1_lev, sigma2_lev, p_lev);
+    samplesLev_new = check_diffs(samplesLev_new, samplesNoOC,...
+                            diff_lims_lev);
 
     % Compute differences
     diff_lev_new = samplesLev_new - samplesNoOC; %samplesLev - samplesNoOC;
@@ -336,6 +351,8 @@ while and(OBJ ~=1, NUM_TRIALS < MAX_TRIALS)
 
     % shuffle the dsg samples (biased)
     samplesDsg_new = biasedShuffle(samplesDsg, sigma1_dsg, sigma2_dsg, p_dsg);
+    samplesDsg_new = check_diffs(samplesDsg_new, samplesNoOC,...
+                            diff_lims_dsg);
 
     % compute differences
     diff_dsg_new = samplesDsg_new - samplesNoOC;
@@ -404,7 +421,7 @@ figure(3);
 diff_lev = samplesLev - samplesNoOC;
 diff_dsg = samplesDsg - samplesNoOC;
 
-yrange = [0,0.075];
+yrange = [0,0.1];
 clf; 
 subplot(1,2,1)
 histogram(diff_lev, ...
@@ -452,7 +469,7 @@ hold off
 figure(5)
 clf;
 subplot(1,2,1)
-xrange = [40, 180];
+xrange = [40, 200];
 yrange = xrange;
 plot(samplesNoOC, samplesLev, 'linestyle', 'none', 'marker', '.', 'markersize', 15)
 xlabel(strcat('Factor ', factor,' before OC'))
@@ -471,8 +488,16 @@ xlim(xrange)
 
 
 figure(6)
+ms = 20;
+temp = gray(3); cgray = temp(2,:);
 clf;
 hold on
+ax = gca; set(ax, 'FontSize',18)
+ylim(yrange)
+xlim(xrange)
+temp = xlim(gca);
+x = linspace(temp(1),temp(2));
+plot(x,x,'color',cgray,'linewidth',2)
 plot(samplesNoOC, samplesLev, 'linestyle', 'none', ...
     'marker', '.', 'markersize', 15, ...
     'color', cmap(2,:))
@@ -482,9 +507,8 @@ plot(samplesNoOC, samplesDsg, 'linestyle', 'none', ...
 xlabel(strcat('Factor ', factor,' before OC'))
 ylabel(strcat('Factor ',factor,' after OC'))
 title({'VP pairs', ['Factor ', factor]})
-legend('Lev','Dsg') 
-ylim(yrange)
-xlim(xrange)
+legend('','Lev','Dsg') 
+
 hold off
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%

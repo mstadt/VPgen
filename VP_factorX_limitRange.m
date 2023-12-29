@@ -34,22 +34,26 @@ clearvars -except F_noOC F_lev F_dsg factor note;
 MEAN_lev = 22; %Table 1 taken from Middeldorp et al. 2000
 STD_lev  = 14;  %The Standard Deviation.
 
+diff_lims_lev = [MEAN_lev - 3*STD_lev, MEAN_lev + 3*STD_lev];
+
 MEAN_dsg = 25;
 STD_dsg  = 12;
+
+diff_lims_dsg = [MEAN_dsg - 3*STD_dsg, MEAN_dsg + 3*STD_dsg];
 
 N_vp = 1e4; %100 %1e4 %1e4; % how many virtual patients
 
 % shuffle hyperparameters
-sigma1_lev = 0.1 * N_vp; %
-sigma2_lev = 0.01*sigma1_lev; % variance for high and low values
-p_lev = [25, 75]; % percentiles to change bias
+sigma1_lev = 0.15*N_vp; %0.1 * N_vp; %
+sigma2_lev = 0.1*sigma1_lev; %0.01*sigma1_lev; % variance for high and low values
+p_lev = [10,90];%[25, 75]; % percentiles to change bias
 
 MEAN_err = 0.1; % percentage error from given mean
 STD_err  = 0.1; % percentage error from given STD
 
-sigma1_dsg = 0.1 * N_vp; 
-sigma2_dsg = 0.01*sigma1_dsg; %0.01*sigma1_dsg; % variance for high and low values
-p_dsg = [25,75]; %[25, 75]; % percentiles to change bias
+sigma1_dsg = 0.15 * N_vp; %0.1 * N_vp; 
+sigma2_dsg = 0.1 * sigma1_dsg; %0.5*sigma1_dsg; %0.01*sigma1_dsg; %0.01*sigma1_dsg; % variance for high and low values
+p_dsg = [10,90]; %[25,75]; %[25, 75]; % percentiles to change bias
 
 
 
@@ -225,6 +229,8 @@ while and(OBJ ~= 1, NUM_TRIALS < MAX_TRIALS)
     
     % shuffle the Lev samples (biased)
     samplesLev_new = biasedShuffle(samplesLev, sigma1_lev, sigma2_lev, p_lev);
+    samplesLev_new = check_diffs(samplesLev_new, samplesNoOC,...
+                            diff_lims_lev);
 
     % Compute differences
     diff_lev_new = samplesLev_new - samplesNoOC; %samplesLev - samplesNoOC;
@@ -336,6 +342,9 @@ while and(OBJ ~=1, NUM_TRIALS < MAX_TRIALS)
 
     % shuffle the dsg samples (biased)
     samplesDsg_new = biasedShuffle(samplesDsg, sigma1_dsg, sigma2_dsg, p_dsg);
+    samplesDsg_new = check_diffs(samplesDsg_new, samplesNoOC,...
+                        diff_lims_dsg);
+
 
     % compute differences
     diff_dsg_new = samplesDsg_new - samplesNoOC;
@@ -469,10 +478,21 @@ title('Dsg VP pairs')
 ylim(yrange)
 xlim(xrange)
 
-
+%% plot pairs
+ms = 20;
+temp = gray(3);
+cgray = temp(2,:);
 figure(6)
 clf;
 hold on
+ax = gca;
+set(ax,'FontSize',18)
+ylim(yrange)
+xlim(xrange)
+% x = y line
+temp = xlim(gca);
+x = linspace(temp(1),temp(2));
+plot(x,x,'color',cgray,'linewidth',2)
 plot(samplesNoOC, samplesLev, 'linestyle', 'none', ...
     'marker', '.', 'markersize', 15, ...
     'color', cmap(2,:))
@@ -482,9 +502,8 @@ plot(samplesNoOC, samplesDsg, 'linestyle', 'none', ...
 xlabel(strcat('Factor ', factor,' before OC'))
 ylabel(strcat('Factor ',factor,' after OC'))
 title({'VP pairs', ['Factor ', factor]})
-legend('Lev','Dsg') 
-ylim(yrange)
-xlim(xrange)
+legend('','Lev','Dsg') 
+
 hold off
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -492,20 +511,26 @@ hold off
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 save_file = 1;
-fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
-                num2str(N_vp), '_note-', note, '.mat');
+fname = strcat(date, '_Factor', factor, '_VP', ...
+                '_n-', num2str(N_vp), ...
+                '_limitRange',...
+                '_note-', note, '.mat');
 if isfile(fname)
     save_file = input('file exists. save file? (0/1)');
     if save_file
         note = input('change note. note: ');
-        fname = strcat(date, '_Factor', factor, '_VP', '_n-', ...
-                    num2str(N_vp), '_note-', note, '.mat');
+        fname = strcat(date, '_Factor', factor, '_VP',...
+                    '_n-', num2str(N_vp), ...
+                    '_limitRange',...
+                    '_note-', note, '.mat');
     end
 end
 if save_file
     save(fname, 'samplesNoOC', 'samplesDsg', 'samplesLev')
     fnameinf = strcat(date, '_Factor', factor, '_VP', ...
-        '_n-', num2str(N_vp), '_note-', note ,'_info.mat');
+        '_n-', num2str(N_vp), ...
+        '_limitRange',...
+        '_note-', note ,'_info.mat');
     save(fnameinf)
     
     fprintf('VP saved to: \n %s \n', fname)
