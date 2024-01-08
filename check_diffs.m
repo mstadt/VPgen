@@ -1,4 +1,5 @@
 function newArray = check_diffs(levORdsg, noOC, diff_lims)
+    % This function ensures that the before OC and after OC differences
     % Inputs:
     %   levORdsg -- lev/dsg samples
     %   noOC -- noOC samples

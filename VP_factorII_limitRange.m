@@ -195,7 +195,7 @@ title('STD')
 
 
 % Introduce variance into the lev sample
-% by doing a biased shuffle for the "matching"
+% by doing a biased shuffle for the pair "matching"
 OBJ_MEAN = 0;
 last_samp = 0;
 while and(OBJ ~= 1, NUM_TRIALS < MAX_TRIALS)
