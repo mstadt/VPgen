@@ -2,7 +2,7 @@
 clear all;
 
 % set factor
-factor = 'VII'
+factor = 'V'
 note = 'alg3' % algorithm 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -27,29 +27,28 @@ F_noOC = [F_noOC1; F_noOC2]; % merge noOC data together
 clearvars -except F_noOC F_lev F_dsg factor note;
 
 %Desired Mean Difference After Treatment (Lev - NoOC):
-% Factor VII
-MEAN_lev = 12; %Table 1 taken from Middeldorp et al. 2000
-MEAN_lev_range = [MEAN_lev - 1.3, MEAN_lev +  1.0];
-STD_lev  = 15;  %The Standard Deviation.
+% Factor V
+MEAN_lev = -3; %Table 1 taken from Middeldorp et al. 2000
+MEAN_lev_range = [MEAN_lev - 1.0, MEAN_lev +  1.0];
+STD_lev  = 12;  %The Standard Deviation.
 STD_lev_range = [STD_lev - 1.0, STD_lev + 1.0;];
 
-MEAN_dsg = 32;
+MEAN_dsg = -11;
 MEAN_dsg_range = [MEAN_dsg - 1.0, MEAN_dsg + 1.0];
-STD_dsg  = 10;
+STD_dsg  = 8;
 STD_dsg_range = [STD_dsg - 1.0, STD_dsg + 1.0;];
 
 N_vp = 1e4; %100; %1e4; %100; %1e4; %100  % how many virtual patients
 
 % hyperparameters
-delta_lev = 0.35; %0.3; %0.4; % hyperparameter for added noise on probabilities
-delta_dsg = 0.15; %0.2; % hyperparamger
+delta_lev = 0.3; %0.2; %0.1;  % hyperparameter for added noise on probabilities
+delta_dsg = 0.16; %0.15; %0.1; % hyperparamger
 
 
 % Maximum number of trials
-MAX_TRIALS = 100; %500;
+MAX_TRIALS = 25; %500;
 
 % set random seed
-%rng(1) %rng(72)
 rng(25)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -379,7 +378,7 @@ figure(7);
 diff_lev = samplesLev - samplesNoOC;
 diff_dsg = samplesDsg - samplesNoOC;
 
-yrange = [0,0.05];
+yrange = [0,0.065];
 clf; 
 subplot(1,2,1)
 histogram(diff_lev, ...
@@ -423,7 +422,7 @@ hold off
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot pairs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-xrange = [30, 210];
+xrange = [40, 190];
 yrange = xrange;
 figure(6)
 clf;

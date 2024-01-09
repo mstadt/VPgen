@@ -2,7 +2,7 @@
 clear all;
 
 % set factor
-factor = 'VII'
+factor = 'VIII'
 note = 'alg3' % algorithm 3
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -21,35 +21,37 @@ F_noOC1 = csvtable1.Var2;
 F_lev   = csvtable2.Var2;
 F_noOC2 = csvtable3.Var2;
 F_dsg   = csvtable4.Var2;
+%F_dsg = [F_dsg; mean(F_dsg)]; % add for size
 
 F_noOC = [F_noOC1; F_noOC2]; % merge noOC data together
 
-clearvars -except F_noOC F_lev F_dsg factor note;
+% skew towards the mean (bias dataset)
+
+%clearvars -except F_noOC F_lev F_dsg factor note;
 
 %Desired Mean Difference After Treatment (Lev - NoOC):
-% Factor VII
-MEAN_lev = 12; %Table 1 taken from Middeldorp et al. 2000
-MEAN_lev_range = [MEAN_lev - 1.3, MEAN_lev +  1.0];
-STD_lev  = 15;  %The Standard Deviation.
-STD_lev_range = [STD_lev - 1.0, STD_lev + 1.0;];
+% Factor VIII
+MEAN_lev = 9; % 6 % ADJUSTED TO F_noOC1 and F_noOC2 data!
+MEAN_lev_range = [MEAN_lev - 1.0, MEAN_lev +  1.0];
+STD_lev  = 25;  %The Standard Deviation.
+STD_lev_range = [STD_lev - 1.0, STD_lev + 1.0];
 
-MEAN_dsg = 32;
-MEAN_dsg_range = [MEAN_dsg - 1.0, MEAN_dsg + 1.0];
-STD_dsg  = 10;
+MEAN_dsg = 10;
+MEAN_dsg_range = [MEAN_dsg - 1.5, MEAN_dsg + 1.0];
+STD_dsg  = 23;
 STD_dsg_range = [STD_dsg - 1.0, STD_dsg + 1.0;];
 
 N_vp = 1e4; %100; %1e4; %100; %1e4; %100  % how many virtual patients
 
 % hyperparameters
-delta_lev = 0.35; %0.3; %0.4; % hyperparameter for added noise on probabilities
-delta_dsg = 0.15; %0.2; % hyperparamger
+delta_lev = 0.3;  % hyperparameter for added noise on probabilities
+delta_dsg = 0.27; % hyperparamger
 
 
 % Maximum number of trials
-MAX_TRIALS = 100; %500;
+MAX_TRIALS = 50; %500;
 
 % set random seed
-%rng(1) %rng(72)
 rng(25)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -72,8 +74,8 @@ lw = 3;
 cmap = parula(5);
 c_h = 1; c_kdf = 3; c_samp = 5;
 w_bin = 5;
-xrange = [40, 190];
-yrange = [0,0.06];
+xrange = [0, 240];
+yrange = [0,0.04];
 subplot(1,3,1)
 histogram(F_noOC,'Normalization','pdf', ...
             'BinWidth', w_bin, 'FaceColor', cmap(c_h,:))
@@ -379,7 +381,7 @@ figure(7);
 diff_lev = samplesLev - samplesNoOC;
 diff_dsg = samplesDsg - samplesNoOC;
 
-yrange = [0,0.05];
+yrange = [0,0.03];
 clf; 
 subplot(1,2,1)
 histogram(diff_lev, ...
@@ -423,7 +425,7 @@ hold off
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plot pairs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-xrange = [30, 210];
+xrange = [0, 270];
 yrange = xrange;
 figure(6)
 clf;
